@@ -10,7 +10,10 @@ class HumanController(object):
         self.experience = []
 
     def action(self, o):
-        return self.mapping[self.r.get("action")]
+        c = self.r.get("action")
+        if c not in self.mapping:
+            return 0  # FIXME: for unknown action always take default
+        return self.mapping[c]
 
     def store(self, observation, action, reward, newobservation):
         pass
@@ -22,8 +25,11 @@ class HumanController(object):
 
 def control_me():
     r = StrictRedis()
+    print("Human controller started. Press 'q' to exit ... ")
     while True:
         c = getch()
+        if c == 'q':
+            return
         r.set("action", c)
 
 

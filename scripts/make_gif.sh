@@ -24,4 +24,11 @@ do
         inkscape -z -e $img.png -b white $img
     fi
 done
-convert -delay 3 -loop 0 $(ls $images_directory/*.png | sort -V) animation.gif
+if [ "$(uname)" == "Darwin" ]; then
+    # Do something under Mac OS X platform        
+    echo "You will need gsort to run this script properly. Try 'brew install coreutils'"
+    convert -delay 3 -loop 0 $(ls $images_directory/*.png | gsort -V ) animation.gif
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    # Do something under GNU/Linux platform
+    convert -delay 3 -loop 0 $(ls $images_directory/*.png | sort -V) animation.gif
+fi

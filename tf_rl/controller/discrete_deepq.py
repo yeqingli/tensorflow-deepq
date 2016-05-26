@@ -3,6 +3,7 @@ import random
 import tensorflow as tf
 
 from collections import deque
+from setuptools.sandbox import save_path
 
 class DiscreteDeepQ(object):
     def __init__(self, observation_size,
@@ -18,7 +19,9 @@ class DiscreteDeepQ(object):
                        discount_rate=0.95,
                        max_experience=30000,
                        target_network_update_rate=0.01,
-                       summary_writer=None):
+                       summary_writer=None,
+                       save_path=None,
+                       restore_path=None):
         """Initialized the Deepq object.
 
         Based on:
@@ -74,6 +77,9 @@ class DiscreteDeepQ(object):
                 T = (1-alpha)*T + alpha*N
         summary_writer: tf.train.SummaryWriter
             writer to log metrics
+        save_path: string, path for saving checkpoint.
+        restore_path: string, path of checkpoint file. 
+            If not None, will load model from checkpoint.
         """
         # memorize arguments
         self.observation_size          = observation_size
@@ -99,11 +105,18 @@ class DiscreteDeepQ(object):
 
         self.iteration = 0
         self.summary_writer = summary_writer
+        self.save_path = save_path
 
+        self.saver = tf.train.Saver(var_list=self.q_network.variables(), 
+                                    max_to_keep=None)
+            
         self.number_of_times_store_called = 0
         self.number_of_times_train_called = 0
 
         self.create_variables()
+
+        if restore_path is not None:
+            self.saver.restore(self.s, restore_path)
 
     def linear_annealing(self, n, total, p_initial, p_final):
         """Linear annealing between p_initial and p_final
@@ -203,6 +216,12 @@ class DiscreteDeepQ(object):
             if len(self.experience) <  self.minibatch_size:
                 return
 
+            if self.iteration % 100 == 0 \
+                and self.save_path is not None:
+                self.saver.save(self.s, self.save_path, 
+                                global_step=self.iteration)
+                print "save model"
+
             # sample experience.
             samples   = random.sample(range(len(self.experience)), self.minibatch_size)
             samples   = [self.experience[i] for i in samples]
@@ -228,7 +247,7 @@ class DiscreteDeepQ(object):
                     newstates_mask[i] = 0
 
 
-            calculate_summaries = self.iteration % 100 == 0 and \
+            calculate_summaries = self.iteration % 10 == 0 and \
                     self.summary_writer is not None
 
             cost, _, summary_str = self.s.run([
@@ -249,5 +268,5 @@ class DiscreteDeepQ(object):
                 self.summary_writer.add_summary(summary_str, self.iteration)
 
             self.iteration += 1
-
+        
         self.number_of_times_train_called += 1

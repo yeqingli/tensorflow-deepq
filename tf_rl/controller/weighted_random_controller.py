@@ -1,6 +1,6 @@
 import random
 
-class RandomController(object):
+class WeightedRandomController(object):
     def __init__(self, mapping):
         self.mapping = mapping
         self.num_actions = len(self.mapping)

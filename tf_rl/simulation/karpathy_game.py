@@ -86,6 +86,7 @@ class KarpathyGame(object):
         self.num_actions      = len(self.directions)
 
         self.objects_eaten = defaultdict(lambda: 0)
+        self.num_step = 0
 
     def perform_action(self, action_id):
         """Change speed to one of hero vectors"""
@@ -111,6 +112,7 @@ class KarpathyGame(object):
         for obj in self.objects + [self.hero] :
             obj.step(dt)
         self.resolve_collisions()
+        self.num_step += 1
 
     def squared_distance(self, p1, p2):
         return (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2
@@ -276,6 +278,7 @@ class KarpathyGame(object):
             "nearest wall = %.1f" % (self.distance_to_walls(),),
             "reward       = %.1f" % (sum(recent_reward)/len(recent_reward),),
             "objects eaten => %s" % (objects_eaten_str,),
+            "steps        = %d" % (self.num_step,),
         ])
 
         scene = svg.Scene((self.size[0] + 20, self.size[1] + 20 + 20 * len(stats)))

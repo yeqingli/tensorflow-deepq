@@ -16,7 +16,8 @@ def simulate(simulation,
              simulation_resolution=None,
              wait=False,
              disable_training=False,
-             save_path=None):
+             save_path=None,
+             max_frame=None):
     """Start the simulation. Performs three tasks
 
         - visualizes simulation in iPython notebook
@@ -47,6 +48,8 @@ def simulate(simulation,
     save_path: str
         save svg visualization (only tl_rl.utils.svg
         supported for the moment)
+    max_frame: integer
+        max frame to run.
     """
 
     # prepare path to save simulation images
@@ -110,4 +113,7 @@ def simulate(simulation,
         time_should_have_passed = frame_no / fps
         time_passed = (time.time() - simulation_started_time)
         if wait and (time_should_have_passed > time_passed):
-            time.sleep(time_should_have_passed - time_passed)
+            time.sleep(time_should_have_passed - time_passed) 
+        if max_frame and frame_no > max_frame:
+            print("Reach max frames ", max_frame)
+            break 
